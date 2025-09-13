@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cohereAI } from "@/lib/cohere-ai";
+import { prisma } from "@/lib/prisma";
 
 
 export async function POST(request: NextRequest) {
@@ -43,8 +44,24 @@ export async function POST(request: NextRequest) {
     
     console.log("Processing with sessionId:", actualSessionId);
 
-    // Get conversation history
-    const conversationHistory = cohereAI.getSessionHistory(actualSessionId);
+    // Get conversation history from database
+    const session = await prisma.chatSession.findUnique({
+      where: { id: actualSessionId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    // Convert database messages to the format expected by CohereAI
+    const conversationHistory = session?.messages.map(msg => ({
+      role: msg.role.toLowerCase() as 'user' | 'assistant',
+      content: msg.content,
+      timestamp: msg.createdAt.getTime(),
+    })) || [];
+
+    console.log(`Retrieved ${conversationHistory.length} messages from database for session ${actualSessionId}`);
 
     // Generate AI response
     const reply = await cohereAI.generateResponse(message, actualSessionId, conversationHistory, API_KEY);

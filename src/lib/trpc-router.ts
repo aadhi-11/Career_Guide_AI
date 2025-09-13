@@ -6,10 +6,23 @@ import { mockSessions } from './dummy-data';
 export const appRouter = router({
   // Reset sessions to only the 5 mock sessions (for development)
   resetSessions: publicProcedure.mutation(async () => {
-    // Clear existing sessions
+    // Clear existing sessions and messages
+    await prisma.message.deleteMany();
     await prisma.chatSession.deleteMany();
-    
-    // Create mock sessions
+    await prisma.user.deleteMany(); // Clear users too
+
+    // Create a fake user for seeding
+    const fakeUser = await prisma.user.upsert({
+      where: { email: 'demo@careerguide.com' },
+      update: {},
+      create: {
+        id: 'user-demo-123',
+        name: 'Demo User',
+        email: 'demo@careerguide.com',
+      },
+    });
+
+    // Create mock sessions linked to the fake user
     for (const session of mockSessions) {
       await prisma.chatSession.create({
         data: {
@@ -18,6 +31,16 @@ export const appRouter = router({
           lastMessage: session.lastMessage,
           createdAt: session.timestamp,
           updatedAt: session.timestamp,
+          userId: fakeUser.id, // Link to the fake user
+          messages: {
+            create: session.messages.map(msg => ({
+              id: msg.id,
+              content: msg.content,
+              role: msg.role.toUpperCase() as 'USER' | 'ASSISTANT',
+              createdAt: msg.timestamp,
+              updatedAt: msg.timestamp,
+            })),
+          },
         },
       });
     }
@@ -25,30 +48,55 @@ export const appRouter = router({
     return { success: true };
   }),
 
-  // Get all chat sessions
-  getSessions: publicProcedure.query(async () => {
-    const sessions = await prisma.chatSession.findMany({
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
+  // Get chat sessions with pagination
+  getSessions: publicProcedure
+    .input(z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(50).default(7),
+    }).optional())
+    .query(async ({ input }) => {
+      const { page = 1, limit = 7 } = input || {};
+      const skip = (page - 1) * limit;
+
+      // Get total count for pagination info
+      const totalCount = await prisma.chatSession.count();
+      
+      // Get paginated sessions
+      const sessions = await prisma.chatSession.findMany({
+        skip,
+        take: limit,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          messages: {
+            orderBy: { createdAt: 'asc' },
+          },
         },
-      },
-    });
-    
-    return sessions.map((session: any) => ({
-      id: session.id,
-      title: session.title,
-      lastMessage: session.lastMessage || '',
-      timestamp: session.updatedAt,
-      messages: session.messages.map((msg: any) => ({
-        id: msg.id,
-        content: msg.content,
-        role: msg.role.toLowerCase() as 'user' | 'assistant',
-        timestamp: msg.createdAt,
-      })),
-    }));
-  }),
+      });
+      
+      const totalPages = Math.ceil(totalCount / limit);
+      
+      return {
+        sessions: sessions.map((session: any) => ({
+          id: session.id,
+          title: session.title,
+          lastMessage: session.lastMessage || '',
+          timestamp: session.updatedAt,
+          messages: session.messages.map((msg: any) => ({
+            id: msg.id,
+            content: msg.content,
+            role: msg.role.toLowerCase() as 'user' | 'assistant',
+            timestamp: msg.createdAt,
+          })),
+        })),
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalCount,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      };
+    }),
 
   // Get a specific session by ID
   getSession: publicProcedure
@@ -64,7 +112,7 @@ export const appRouter = router({
       });
       
       if (!session) {
-        throw new Error('Session not found');
+        throw new Error(`Session with ID ${input.sessionId} not found`);
       }
       
       return {
@@ -85,10 +133,22 @@ export const appRouter = router({
   createSession: publicProcedure
     .input(z.object({ title: z.string().optional() }))
     .mutation(async ({ input }) => {
+      // Get or create the demo user
+      const fakeUser = await prisma.user.upsert({
+        where: { email: 'demo@careerguide.com' },
+        update: {},
+        create: {
+          id: 'user-demo-123',
+          name: 'Demo User',
+          email: 'demo@careerguide.com',
+        },
+      });
+
       const newSession = await prisma.chatSession.create({
         data: {
           title: input.title || "New Chat",
           lastMessage: "",
+          userId: fakeUser.id, // Link to the fake user
         },
       });
       
@@ -145,7 +205,7 @@ export const appRouter = router({
         data: {
           content: input.content,
           role: input.role.toUpperCase() as 'USER' | 'ASSISTANT',
-          sessionId: input.sessionId,
+          chatSessionId: input.sessionId,
         },
       });
 

@@ -10,27 +10,28 @@ class CohereAIService {
   private conversationHistory: Map<string, ChatMessage[]> = new Map();
 
   private getSystemPrompt(): string {
-    return `You are a friendly, experienced career mentor having a casual chat. Be brief, warm, and conversational like you're talking to a friend over coffee.
+    return `You are a professional career guide. Respond with direct, concise advice using minimal words. Be authoritative yet approachable.
 
-IMPORTANT: Every response MUST end with a question to keep the conversation flowing.
+CRITICAL FORMATTING RULES:
+1. Keep responses under 100 words
+2. Be direct and to the point
+3. Use bullet points for lists
+4. ALWAYS end with a follow-up question
+5. Add ONE blank line before the final question
 
-Your style:
-- Keep responses short (2-3 sentences max)
-- Use bullet points for lists when helpful
-- Be encouraging and relatable
-- Share quick, actionable tips
-- Ask engaging follow-up questions
-- Use casual, friendly language
+Response format:
+[Direct advice with bullet points if needed]
 
-Examples of good responses:
-"Great question! Here are 3 quick steps to get started:
-• Pick one programming language (I'd suggest Python or JavaScript)
-• Build 2-3 small projects to practice
-• Join online communities like GitHub
+[Blank line]
 
-What type of projects interest you most?"
+[One follow-up question]
 
-Remember: Be brief, friendly, and always end with a question!`;
+Example:
+"Start with Python or JavaScript. Build 3 projects, create a GitHub portfolio, apply to 10 jobs daily.
+
+What's your current skill level?"
+
+Remember: Professional, concise, direct, always end with a question after a blank line.`;
   }
 
   private formatConversationHistory(history: ChatMessage[]): string {
@@ -67,6 +68,8 @@ Remember: Be brief, friendly, and always end with a question!`;
       // Get the last 5 exchanges for context
       const lastFiveExchanges = this.getLastFiveExchanges(conversationHistory);
       const contextHistory = this.formatConversationHistory(lastFiveExchanges);
+      
+      console.log(`Session ${sessionId}: Retrieved ${conversationHistory.length} total messages, using last ${lastFiveExchanges.length} for context`);
 
       // Create the prompt with system instructions and context
       let prompt = this.getSystemPrompt();
@@ -83,11 +86,11 @@ Remember: Be brief, friendly, and always end with a question!`;
       const response = await cohere.generate({
         model: 'command',
         prompt: prompt,
-        max_tokens: 300, // Reduced for more concise responses
-        temperature: 0.8, // Slightly higher for more natural, friendly tone
+        max_tokens: 150, // Further reduced for very concise responses
+        temperature: 0.7, // Lower for more focused, professional responses
         stop_sequences: ['User:', 'Assistant:', '\n\nUser:', '\n\nAssistant:'],
         k: 0, // Disable top-k sampling for more focused responses
-        p: 0.9, // Use nucleus sampling for better quality
+        p: 0.85, // Slightly lower for more focused responses
       });
 
       const aiResponse = response.generations[0]?.text?.trim() || '';
@@ -100,19 +103,30 @@ Remember: Be brief, friendly, and always end with a question!`;
 
       // Clean up and format the response
       let finalResponse = aiResponse
-        .replace(/\n\s*\n/g, '\n') // Remove extra line breaks
+        .replace(/\n\s*\n/g, '\n\n') // Normalize to single blank lines
         .replace(/^\s+|\s+$/g, '') // Trim whitespace
         .replace(/\s+/g, ' '); // Normalize spaces
 
+      // Ensure proper formatting with blank line before question
+      if (!finalResponse.includes('\n\n')) {
+        // If no blank line exists, add one before the last sentence/question
+        const lastSentence = finalResponse.split('.').pop()?.trim();
+        if (lastSentence && lastSentence.includes('?')) {
+          const mainText = finalResponse.substring(0, finalResponse.lastIndexOf(lastSentence)).trim();
+          finalResponse = `${mainText}\n\n${lastSentence}`;
+        }
+      }
+
       // Ensure the response ends with a question
       if (!finalResponse.endsWith('?') && !finalResponse.endsWith('!')) {
-        // Check if it already contains a question mark somewhere
         if (!finalResponse.includes('?')) {
-          // Add a friendly follow-up question
-          finalResponse += ' What would you like to know more about?';
+          // Add a professional follow-up question with proper spacing
+          finalResponse += '\n\nWhat specific aspect would you like to explore?';
         } else {
-          // If it has a question but doesn't end with one, add a period
-          finalResponse += '.';
+          // If it has a question but doesn't end with one, ensure proper spacing
+          if (!finalResponse.includes('\n\n')) {
+            finalResponse += '\n\n';
+          }
         }
       }
 

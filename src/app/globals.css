@@ -1,26 +1,360 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 20%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 80%;
+  --accent: 0 0% 20%;
+  --accent-foreground: 0 0% 100%;
+  --border: 0 0% 30%;
+  --input: 0 0% 25%;
+  --ring: 0 0% 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Force dark mode backgrounds */
+.dark .bg-gray-50 {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-300 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-400 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-500 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-600 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-700 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-800 {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-gray-900 {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Force dark mode text colors */
+.dark .text-gray-900 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-gray-800 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-gray-700 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-gray-600 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .text-gray-500 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .text-gray-400 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .text-gray-300 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .text-white {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-black {
+  color: hsl(var(--background)) !important;
+}
+
+/* Specific chat component overrides */
+.dark .chat-messages-area {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .chat-sidebar {
+  background-color: hsl(var(--background)) !important;
+  background: linear-gradient(to bottom, hsl(0 0% 20%), hsl(0 0% 10%)) !important;
+}
+
+.dark .chat-header {
+  background: linear-gradient(to right, hsl(0 0% 15%), hsl(0 0% 20%)) !important;
+}
+
+.dark .message-bubble-user {
+  background-color: hsl(0 0% 20%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .message-bubble-ai {
+  background-color: hsl(0 0% 15%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-input-area {
+  background-color: hsl(0 0% 15%) !important;
+}
+
+/* Force sidebar text colors in dark mode */
+.dark .chat-sidebar .text-gray-900 {
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-sidebar .text-gray-500 {
+  color: hsl(0 0% 70%) !important;
+}
+
+.dark .chat-sidebar .text-gray-400 {
+  color: hsl(0 0% 60%) !important;
+}
+
+.dark .chat-sidebar .text-gray-300 {
+  color: hsl(0 0% 80%) !important;
+}
+
+/* Force chat messages area text colors in dark mode */
+.dark .chat-messages-area .text-gray-900 {
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-messages-area .text-gray-500 {
+  color: hsl(0 0% 70%) !important;
+}
+
+.dark .chat-messages-area .text-gray-400 {
+  color: hsl(0 0% 60%) !important;
+}
+
+.dark .chat-messages-area .text-gray-300 {
+  color: hsl(0 0% 80%) !important;
+}
+
+.dark .chat-messages-area p {
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-messages-area span {
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Force input styling in dark mode */
+.dark input {
+  background-color: hsl(0 0% 25%) !important;
+  color: #fff !important;
+  border-color: hsl(0 0% 40%) !important;
+}
+
+.dark input::placeholder {
+  color: hsl(0 0% 70%) !important;
+}
+
+.dark input:focus {
+  background-color: hsl(0 0% 30%) !important;
+  color: #fff !important;
+  border-color: hsl(0 0% 60%) !important;
+}
+
+/* Specific input area styling */
+.dark .chat-input-area input {
+  background-color: hsl(0 0% 25%) !important;
+  color: #fff !important;
+  border-color: hsl(0 0% 40%) !important;
+}
+
+.dark .chat-input-area input::placeholder {
+  color: hsl(0 0% 70%) !important;
+}
+
+.dark .chat-input-area input:focus {
+  background-color: hsl(0 0% 30%) !important;
+  color: #fff !important;
+  border-color: hsl(0 0% 60%) !important;
+}
+
+/* Force landing page to always use light mode */
+.dark .landing-page {
+  background: linear-gradient(to bottom right, hsl(0 0% 96%), hsl(0 0% 90%)) !important;
+}
+
+.dark .landing-page h1 {
+  color: hsl(0 0% 9%) !important;
+}
+
+.dark .landing-page p {
+  color: hsl(0 0% 45%) !important;
+}
+
+.dark .landing-page button {
+  background-color: hsl(0 0% 25%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .landing-page button:hover {
+  background-color: hsl(0 0% 20%) !important;
+}
+
+.dark .landing-page a {
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Force A logo letter to be black in dark mode */
+.dark .chat-header .text-gray-800 {
+  color: hsl(0 0% 0%) !important;
+}
+
+.dark .chat-header span {
+  color: hsl(0 0% 0%) !important;
+}
+
+.dark .chat-header .text-xs,
+.dark .chat-header .text-sm,
+.dark .chat-header .text-base {
+  color: hsl(0 0% 0%) !important;
+}
+
+/* More specific targeting for the A logo */
+.dark .chat-header div div span {
+  color: hsl(0 0% 0%) !important;
+}
+
+/* Target the A logo specifically */
+.dark .a-logo span {
+  color: hsl(0 0% 0%) !important;
+}
+
+.dark .a-logo .text-gray-800 {
+  color: hsl(0 0% 0%) !important;
+}
+
+/* Even more specific targeting */
+.dark .chat-header .a-logo span {
+  color: #000000 !important;
+}
+
+.dark .chat-header .a-logo .text-gray-800 {
+  color: #000000 !important;
+}
+
+/* Force all text in A logo to be black */
+.dark .a-logo * {
+  color: #000000 !important;
+}
+
+/* Keep Career Guide AI button text white in dark mode */
+.dark .chat-header button {
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-header button span {
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-header .text-white {
+  color: hsl(0 0% 100%) !important;
+}
+
+/* More specific targeting for Career Guide AI button */
+.dark .chat-header button span.truncate {
+  color: hsl(0 0% 100%) !important;
+}
+
+.dark .chat-header button .text-sm,
+.dark .chat-header button .text-base,
+.dark .chat-header button .text-lg,
+.dark .chat-header button .text-xl {
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Force white text for the button content */
+.dark .chat-header button * {
+  color: hsl(0 0% 100%) !important;
+}
+
+* {
+  border-color: hsl(var(--border));
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Force dark mode body background */
+.dark body {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark html {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Mobile-specific utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ensure proper touch targets on mobile */
+@media (max-width: 640px) {
+  button, a, input, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+/* Smooth scrolling for mobile */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }

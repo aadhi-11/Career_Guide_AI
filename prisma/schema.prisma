@@ -11,26 +11,47 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Users table for authentication (currently using fake data)
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  chatSessions ChatSession[]
+
+  @@map("users")
+}
+
+// ChatSessions table linked to users
 model ChatSession {
-  id          String    @id @default(cuid())
+  id          String    @id @default(uuid())
+  userId      String
   title       String
   lastMessage String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages    Message[]
 
   @@map("chat_sessions")
+  @@index([userId])
+  @@index([createdAt])
 }
 
+// Messages table linked to chat sessions
 model Message {
-  id        String      @id @default(cuid())
-  content   String
-  role      MessageRole
-  createdAt DateTime    @default(now())
-  sessionId String
-  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id            String      @id @default(uuid())
+  chatSessionId String
+  role          MessageRole
+  content       String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  chatSession   ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
 
   @@map("messages")
+  @@index([chatSessionId])
+  @@index([createdAt])
 }
 
 enum MessageRole {
